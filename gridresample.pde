@@ -27,7 +27,9 @@ float[] getBounds(List<Feature> feats){
 }
 
 float[] bounds;
-List<MultiPolygon> mpolygons;
+List<Feature> feats;
+
+color from,to;
 
 void setup(){
   size(700,400);
@@ -36,26 +38,30 @@ void setup(){
 
   // read the entire shapefile
   print( "begin reading..." );
-  List<Feature> feats = getFeatures( filename, 1000000 );
+  feats = getFeatures( filename, 1000000 );
   println( "done" );
   println( "read "+feats.size()+" features" );
   println( "first feature: "+feats.get(0) );
   
   // get the bounding box of the shapefile
   bounds = getBounds(feats);
-  
-  // copy all geometries to a list
-  mpolygons = new ArrayList();
-  for(Feature feat : feats ){
-    mpolygons.add( (MultiPolygon) feat.getDefaultGeometryProperty().getValue() );
-  }
 
   strokeWeight(0.000003);
   smooth();
+  noStroke();
+  
+  from = color(204, 102, 0);
+  to = color(0, 102, 153);
+  
 }
 
 void drawPolygons(){
-  for(MultiPolygon geom : mpolygons ){
+  for(Feature feat : feats ){
+    MultiPolygon geom = (MultiPolygon) feat.getDefaultGeometryProperty().getValue();
+    int ind = (Integer)feat.getProperty("POP10").getValue();
+    
+    fill( lerpColor(from,to,ind/100.0) );
+    
     for(int i=0; i<geom.getNumGeometries(); i++){
       Geometry subgeom = geom.getGeometryN(i);
       Coordinate[] coords = subgeom.getCoordinates();
@@ -79,6 +85,7 @@ void scaleToBounds(){
 
   float yscale=height/(tt-bb);
   float xscale=width/(rr-ll);
+  
   translate(width/2,height/2);
   scale(xscale,-yscale);
   translate(-objx,-objy);
