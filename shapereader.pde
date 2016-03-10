@@ -33,7 +33,6 @@ public List<Feature> getFeatures(String filename, int maxFeatures) {
       int i=0;
       while (iterator.hasNext () && i<maxFeatures) {
         Feature feature = iterator.next();
-        //Geometry geom = (Geometry) feature.getDefaultGeometryProperty().getValue();
         ret.add( feature );
         
         i += 1;
