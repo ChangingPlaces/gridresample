@@ -1,7 +1,49 @@
 import java.util.List;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.MultiPolygon;
+import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.Envelope;
+import com.vividsolutions.jts.geom.GeometryFactory;
+
+class Grid{
+  List<Polygon> cells;
+  int ncols;
+  int nrows;
+  
+  Grid(float left, float bottom, float right, float top, int ncols, int nrows){
+    this.nrows = nrows;
+    this.ncols = ncols;
+    
+    float cellwidth = (right-left)/ncols;
+    float cellheight = (top-bottom)/nrows;
+    
+    List<Polygon> cells = new ArrayList<Polygon>();
+    GeometryFactory fact = new GeometryFactory();
+    for(int i=0; i<ncols; i++){
+      for(int j=0; j<nrows; j++){
+        // create coordinates of corners
+        Coordinate[] coords = new Coordinate[5];
+        coords[0] = new Coordinate(left+i*cellwidth,bottom+j*cellheight); //lower left
+        coords[1] = new Coordinate(left+(i+1)*cellwidth,bottom+j*cellheight); //lower right
+        coords[2] = new Coordinate(left+(i+1)*cellwidth,bottom+(j+1)*cellheight); //upper right
+        coords[3] = new Coordinate(left+i*cellwidth,bottom+(j+1)*cellheight); //upper left
+        coords[4] = new Coordinate(left+i*cellwidth,bottom+j*cellheight); //lower left
+        
+        // string them together into a geometry
+        LinearRing linear = new GeometryFactory().createLinearRing(coords);
+        Polygon poly = new Polygon(linear, null, fact);
+        
+        cells.add( poly );
+      }
+    }
+    
+    this.cells = cells;
+  }
+  
+  String toString(){
+    return "["+this.ncols+"x"+this.nrows+"]";
+  }
+}
 
 float[] getBounds(List<Feature> feats){
   float[] ret = new float[4];
@@ -28,13 +70,14 @@ float[] getBounds(List<Feature> feats){
 
 float[] bounds;
 List<Feature> feats;
+Grid grid;
 
 color from,to;
 
 void setup(){
   size(700,400);
   
-  String filename = dataPath("tabblock2010_25_pophu.shp");
+  String filename = dataPath("subset.shp");
 
   // read the entire shapefile
   print( "begin reading..." );
@@ -45,10 +88,12 @@ void setup(){
   
   // get the bounding box of the shapefile
   bounds = getBounds(feats);
+  
+  // get grid
+  grid = new Grid(-71.099356, 42.353578, -71.081149, 42.367631, 5, 5);
 
   strokeWeight(0.000003);
   smooth();
-  noStroke();
   
   from = color(204, 102, 0);
   to = color(0, 102, 153);
@@ -56,11 +101,14 @@ void setup(){
 }
 
 void drawPolygons(){
+  noStroke();
+  
   for(Feature feat : feats ){
     MultiPolygon geom = (MultiPolygon) feat.getDefaultGeometryProperty().getValue();
     int ind = (Integer)feat.getProperty("POP10").getValue();
+    float density = ind/(float)geom.getArea();
     
-    fill( lerpColor(from,to,ind/100.0) );
+    fill( lerpColor(from,to,density/300000000.0) );
     
     for(int i=0; i<geom.getNumGeometries(); i++){
       Geometry subgeom = geom.getGeometryN(i);
@@ -71,6 +119,20 @@ void drawPolygons(){
       }
       endShape(CLOSE);
     }
+  }
+}
+
+void drawGrid(){
+  stroke(0);
+  strokeWeight(0.00001);
+  noFill();
+  for(Polygon cell : grid.cells ){
+    Coordinate[] coords = cell.getCoordinates();
+    beginShape();
+    for(Coordinate coord : coords){
+      vertex((float)coord.x,(float)coord.y);
+    }
+    endShape(CLOSE);
   }
 }
 
@@ -97,6 +159,7 @@ void draw(){
   scaleToBounds();
   
   drawPolygons();
+  drawGrid();
   
   noLoop(); //loop once through and stop
 }
