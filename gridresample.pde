@@ -7,8 +7,11 @@ void setup(){
   String filename = dataPath("tabblock2010_25_pophu.shp");
   println( filename );
 
-  List<Geometry> geoms = getGeoms( filename );
-  println( geoms.get(0) );
+  print( "begin reading..." );
+  List<Feature> feats = getFeatures( filename );
+  println( "done" );
+  println( "read "+feats.size()+" features" );
+  println( "first feature: "+feats.get(0) );
   
 }
 

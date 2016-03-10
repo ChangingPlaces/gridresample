@@ -14,9 +14,9 @@ import org.opengis.feature.Feature;
 
 import com.vividsolutions.jts.geom.Geometry;
 
-public List<Geometry> getGeoms(String filename) {
+public List<Feature> getFeatures(String filename) {
   try {
-    ArrayList<Geometry> ret = new ArrayList<Geometry>();
+    ArrayList<Feature> ret = new ArrayList<Feature>();
 
     File file = new File(filename);
     Map<String, Object> map = new HashMap<String, Object>();
@@ -32,9 +32,8 @@ public List<Geometry> getGeoms(String filename) {
     try {
       while (iterator.hasNext ()) {
         Feature feature = iterator.next();
-        Geometry geom = (Geometry) feature.getDefaultGeometryProperty().getValue();
-        ret.add( geom );
-        break;
+        //Geometry geom = (Geometry) feature.getDefaultGeometryProperty().getValue();
+        ret.add( feature );
       }
     } 
     finally {
