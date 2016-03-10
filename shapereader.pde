@@ -14,7 +14,7 @@ import org.opengis.feature.Feature;
 
 import com.vividsolutions.jts.geom.Geometry;
 
-public List<Feature> getFeatures(String filename) {
+public List<Feature> getFeatures(String filename, int maxFeatures) {
   try {
     ArrayList<Feature> ret = new ArrayList<Feature>();
 
@@ -30,10 +30,13 @@ public List<Feature> getFeatures(String filename) {
     FeatureIterator<?> iterator = collection.features();
 
     try {
-      while (iterator.hasNext ()) {
+      int i=0;
+      while (iterator.hasNext () && i<maxFeatures) {
         Feature feature = iterator.next();
         //Geometry geom = (Geometry) feature.getDefaultGeometryProperty().getValue();
         ret.add( feature );
+        
+        i += 1;
       }
     } 
     finally {
