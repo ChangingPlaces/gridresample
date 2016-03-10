@@ -30,32 +30,28 @@ float[] bounds;
 List<MultiPolygon> mpolygons;
 
 void setup(){
-  size(200,200);
+  size(700,400);
   
   String filename = dataPath("tabblock2010_25_pophu.shp");
-  println( filename );
 
+  // read the entire shapefile
   print( "begin reading..." );
-  List<Feature> feats = getFeatures( filename, 1 );
+  List<Feature> feats = getFeatures( filename, 1000000 );
   println( "done" );
   println( "read "+feats.size()+" features" );
   println( "first feature: "+feats.get(0) );
   
+  // get the bounding box of the shapefile
   bounds = getBounds(feats);
-  println( bounds );
   
+  // copy all geometries to a list
   mpolygons = new ArrayList();
-  mpolygons.add( (MultiPolygon) feats.get(0).getDefaultGeometryProperty().getValue() );
-  
-//  MultiPolygon geom = (MultiPolygon) feats.get(0).getDefaultGeometryProperty().getValue();
-//  for(int i=0; i<geom.getNumGeometries(); i++){
-//    Geometry subgeom = geom.getGeometryN(i);
-//    println( subgeom.getCoordinates() );
-//  }
+  for(Feature feat : feats ){
+    mpolygons.add( (MultiPolygon) feat.getDefaultGeometryProperty().getValue() );
+  }
 
   strokeWeight(0.000003);
   smooth();
-  
 }
 
 void drawPolygons(){
@@ -72,9 +68,7 @@ void drawPolygons(){
   }
 }
 
-void draw(){
-  background(255);
-
+void scaleToBounds(){
   float ll = bounds[0];
   float bb = bounds[1];
   float rr = bounds[2];
@@ -88,13 +82,14 @@ void draw(){
   translate(width/2,height/2);
   scale(xscale,-yscale);
   translate(-objx,-objy);
-  
-  
-  stroke(255,0,0);
-  line(ll,bb,rr,tt);
-  stroke(0);
-  line(ll,tt,rr,bb);
-  line(ll,tt,rr,tt);
+}
+
+void draw(){
+  background(255);
+
+  scaleToBounds();
   
   drawPolygons();
+  
+  noLoop(); //loop once through and stop
 }
