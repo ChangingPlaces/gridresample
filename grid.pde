@@ -1,42 +1,34 @@
 class Grid{
   float eq_m_per_londeg = 17716.9;
+  float m_per_londeg;
   float m_per_latdeg = 17657.7;
   
   List<Polygon> cells;
   int ncols;
   int nrows;
-  float cellArea;
+  
+  Coordinate proj(Coordinate coord){
+    // deg * m/deg = m
+    return new Coordinate(coord.x * m_per_latdeg, coord.y * m_per_latdeg);
+  }
+  
+  Coordinate unproj(Coordinate coord){
+    // m / (m/deg) = m * (deg/m) = deg
+    return new Coordinate(coord.x / m_per_latdeg, coord.y / m_per_latdeg);
+  }
     
-  Grid(float centerlat, float centerlon, float cellwidth_meters, int ncols, int nrows) throws Exception{
-    CoordinateReferenceSystem worldCRS = CRS.decode("EPSG:4326");
-    CoordinateReferenceSystem mercatorCRS = CRS.decode("EPSG:3857");
-    MathTransform toMercator = CRS.findMathTransform(worldCRS, mercatorCRS, false);
+  Grid(float centerlat, float centerlon, float cellwidth, int ncols, int nrows) throws Exception{    
+    m_per_londeg = cos( radians(centerlat) )*eq_m_per_londeg;
     
-    // convert centerlat/centerlon to mercator
-    GeometryFactory builder = new GeometryFactory();
-    Point center = builder.createPoint( new Coordinate(centerlon, centerlat) );
-    Geometry mercCenter = JTS.transform( center, toMercator);
-    float centerx = (float)mercCenter.getCoordinate().x;
-    float centery = (float)mercCenter.getCoordinate().y;
-    println( "("+centerx+","+centery+")" );
-    
-    
-    float m_per_londeg = cos( radians(centerlat) )*eq_m_per_londeg;
-    
-    float cellwidth = cellwidth_meters / m_per_londeg; // m / (m/deg) = m * (deg/m) = deg
-    float cellheight = cellwidth_meters / m_per_latdeg; // m / (m/deg) = m * (deg/m) = deg
+    Coordinate center = proj( new Coordinate(centerlon,centerlat) );
     float totalwidth = cellwidth*ncols;
-    float totalheight = cellheight*nrows;
-    float left = centerlon - totalwidth/2;
-    float rigtht = centerlon + totalwidth/2;
-    float bottom = centerlat - totalheight/2;
-    float top = centerlat + totalheight/2;
+    float totalheight = cellwidth*nrows;
+    float left = (float)center.x - totalwidth/2;
+    float bottom = (float)center.y - totalwidth/2;
     
     this.nrows = nrows;
     this.ncols = ncols;
-    
-    this.cellArea = cellwidth*cellheight;
-    
+        
     List<Polygon> cells = new ArrayList<Polygon>();
     GeometryFactory fact = new GeometryFactory();
     for(int y=0; y<nrows; y++){
@@ -44,11 +36,11 @@ class Grid{
 
         // create coordinates of corners
         Coordinate[] coords = new Coordinate[5];
-        coords[0] = new Coordinate(left+x*cellwidth,    bottom+y*cellheight); //lower left
-        coords[1] = new Coordinate(left+(x+1)*cellwidth,bottom+y*cellheight); //lower right
-        coords[2] = new Coordinate(left+(x+1)*cellwidth,bottom+(y+1)*cellheight); //upper right
-        coords[3] = new Coordinate(left+x*cellwidth,    bottom+(y+1)*cellheight); //upper left
-        coords[4] = new Coordinate(left+x*cellwidth,    bottom+y*cellheight); //lower left
+        coords[0] = unproj( new Coordinate(left+x*cellwidth,    bottom+y*cellwidth) ); //lower left
+        coords[1] = unproj( new Coordinate(left+(x+1)*cellwidth,bottom+y*cellwidth) ); //lower right
+        coords[2] = unproj( new Coordinate(left+(x+1)*cellwidth,bottom+(y+1)*cellwidth) ); //upper right
+        coords[3] = unproj( new Coordinate(left+x*cellwidth,    bottom+(y+1)*cellwidth) ); //upper left
+        coords[4] = unproj( new Coordinate(left+x*cellwidth,    bottom+y*cellwidth) ); //lower left
         
         // string them together into a geometry
         LinearRing linear = new GeometryFactory().createLinearRing(coords);

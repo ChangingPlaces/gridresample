@@ -7,7 +7,6 @@ import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.index.strtree.STRtree;
 
-import org.geotools.referencing.CRS;
 import com.vividsolutions.jts.geom.GeometryFactory;
 
 float[] getBounds(List<Feature> feats){
@@ -57,17 +56,6 @@ void setup(){
   println( "done" );
   println( "read "+feats.size()+" features" );
   println( "first feature: "+feats.get(0) );
-  
-//  try{
-//    CoordinateReferenceSystem sourceCRS = CRS.decode("EPSG:3857");
-//    CoordinateReferenceSystem targetCRS = CRS.decode("EPSG:23032");
-//    
-//    MathTransform transform = CRS.findMathTransform(sourceCRS, targetCRS, true);
-//    println( transform );
-//  }catch(Exception ex){
-//    println( ex );
-//  }
-
   
   println("indexing...");
   index = new STRtree();
@@ -128,12 +116,13 @@ void drawGrid(){
   noFill();
   for(int y=0; y<nrows; y++){
     for(int x=0; x<ncols; x++){
+      Polygon cell = grid.getCell(x,y);
       float ind = resampled[y][x];
-      float density = ind/grid.cellArea;
+      float density = ind/(float)cell.getArea();
       
       fill( lerpColor(from,to,density/300000000.0) );
       
-      Polygon cell = grid.getCell(x,y);
+      
       Coordinate[] coords = cell.getCoordinates();
       beginShape();
       for(Coordinate coord : coords){
