@@ -6,8 +6,21 @@ class Grid{
   int ncols;
   int nrows;
   float cellArea;
-  
-  Grid(float centerlat, float centerlon, float cellwidth_meters, int ncols, int nrows){
+    
+  Grid(float centerlat, float centerlon, float cellwidth_meters, int ncols, int nrows) throws Exception{
+    CoordinateReferenceSystem worldCRS = CRS.decode("EPSG:4326");
+    CoordinateReferenceSystem mercatorCRS = CRS.decode("EPSG:3857");
+    MathTransform toMercator = CRS.findMathTransform(worldCRS, mercatorCRS, false);
+    
+    // convert centerlat/centerlon to mercator
+    GeometryFactory builder = new GeometryFactory();
+    Point center = builder.createPoint( new Coordinate(centerlon, centerlat) );
+    Geometry mercCenter = JTS.transform( center, toMercator);
+    float centerx = (float)mercCenter.getCoordinate().x;
+    float centery = (float)mercCenter.getCoordinate().y;
+    println( "("+centerx+","+centery+")" );
+    
+    
     float m_per_londeg = cos( radians(centerlat) )*eq_m_per_londeg;
     
     float cellwidth = cellwidth_meters / m_per_londeg; // m / (m/deg) = m * (deg/m) = deg

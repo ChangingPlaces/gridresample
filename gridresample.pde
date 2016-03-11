@@ -2,9 +2,13 @@ import java.util.List;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.index.strtree.STRtree;
+
+import org.geotools.referencing.CRS;
+import com.vividsolutions.jts.geom.GeometryFactory;
 
 float[] getBounds(List<Feature> feats){
   float[] ret = new float[4];
@@ -54,6 +58,17 @@ void setup(){
   println( "read "+feats.size()+" features" );
   println( "first feature: "+feats.get(0) );
   
+//  try{
+//    CoordinateReferenceSystem sourceCRS = CRS.decode("EPSG:3857");
+//    CoordinateReferenceSystem targetCRS = CRS.decode("EPSG:23032");
+//    
+//    MathTransform transform = CRS.findMathTransform(sourceCRS, targetCRS, true);
+//    println( transform );
+//  }catch(Exception ex){
+//    println( ex );
+//  }
+
+  
   println("indexing...");
   index = new STRtree();
   for(Feature feat : feats){
@@ -67,7 +82,11 @@ void setup(){
   bounds = getBounds(feats);
   
   // get grid
-  grid = new Grid(42.367631, -71.099356, 27, ncols, nrows );
+  try{
+    grid = new Grid(42.367631, -71.099356, 27, ncols, nrows );
+  } catch(Exception ex){
+    grid = null;
+  }
   
   println("starting resample");
   resampled = grid.resample(index, "POP10");
