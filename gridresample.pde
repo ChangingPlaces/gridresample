@@ -5,46 +5,6 @@ import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.GeometryFactory;
 
-class Grid{
-  List<Polygon> cells;
-  int ncols;
-  int nrows;
-  
-  Grid(float left, float bottom, float right, float top, int ncols, int nrows){
-    this.nrows = nrows;
-    this.ncols = ncols;
-    
-    float cellwidth = (right-left)/ncols;
-    float cellheight = (top-bottom)/nrows;
-    
-    List<Polygon> cells = new ArrayList<Polygon>();
-    GeometryFactory fact = new GeometryFactory();
-    for(int i=0; i<ncols; i++){
-      for(int j=0; j<nrows; j++){
-        // create coordinates of corners
-        Coordinate[] coords = new Coordinate[5];
-        coords[0] = new Coordinate(left+i*cellwidth,bottom+j*cellheight); //lower left
-        coords[1] = new Coordinate(left+(i+1)*cellwidth,bottom+j*cellheight); //lower right
-        coords[2] = new Coordinate(left+(i+1)*cellwidth,bottom+(j+1)*cellheight); //upper right
-        coords[3] = new Coordinate(left+i*cellwidth,bottom+(j+1)*cellheight); //upper left
-        coords[4] = new Coordinate(left+i*cellwidth,bottom+j*cellheight); //lower left
-        
-        // string them together into a geometry
-        LinearRing linear = new GeometryFactory().createLinearRing(coords);
-        Polygon poly = new Polygon(linear, null, fact);
-        
-        cells.add( poly );
-      }
-    }
-    
-    this.cells = cells;
-  }
-  
-  String toString(){
-    return "["+this.ncols+"x"+this.nrows+"]";
-  }
-}
-
 float[] getBounds(List<Feature> feats){
   float[] ret = new float[4];
   float xmin = Float.POSITIVE_INFINITY;
@@ -74,8 +34,13 @@ Grid grid;
 
 color from,to;
 
+int nrows=10;
+int ncols=10;
+
+float[][] resampled;
+
 void setup(){
-  size(700,400);
+  size(1000,800);
   
   String filename = dataPath("subset.shp");
 
@@ -90,7 +55,11 @@ void setup(){
   bounds = getBounds(feats);
   
   // get grid
-  grid = new Grid(-71.099356, 42.353578, -71.081149, 42.367631, 5, 5);
+  grid = new Grid(-71.099356, 42.353578, -71.081149, 42.367631, nrows, ncols);
+  
+  println("starting resample");
+  resampled = grid.resample(feats, "POP10");
+  println("resample finished");
 
   strokeWeight(0.000003);
   smooth();
@@ -126,13 +95,21 @@ void drawGrid(){
   stroke(0);
   strokeWeight(0.00001);
   noFill();
-  for(Polygon cell : grid.cells ){
-    Coordinate[] coords = cell.getCoordinates();
-    beginShape();
-    for(Coordinate coord : coords){
-      vertex((float)coord.x,(float)coord.y);
+  for(int y=0; y<nrows; y++){
+    for(int x=0; x<ncols; x++){
+      float ind = resampled[y][x];
+      float density = ind/grid.cellArea;
+      
+      fill( lerpColor(from,to,density/300000000.0) );
+      
+      Polygon cell = grid.getCell(x,y);
+      Coordinate[] coords = cell.getCoordinates();
+      beginShape();
+      for(Coordinate coord : coords){
+        vertex((float)coord.x,(float)coord.y);
+      }
+      endShape(CLOSE);
     }
-    endShape(CLOSE);
   }
 }
 
