@@ -83,7 +83,7 @@ class Grid{
   
   float[][] resample(STRtree index, String propname){
     
-    float[][] ret = new float[ncols][nrows];
+    float[][] ret = new float[nrows][ncols];
     
     for(int y=0; y<nrows; y++){
       for(int x=0; x<ncols; x++){

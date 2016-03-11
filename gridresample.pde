@@ -38,7 +38,7 @@ Grid grid;
 
 color from,to;
 
-int nrows=20;
+int nrows=10;
 int ncols=20;
 
 float[][] resampled;
@@ -71,7 +71,7 @@ void setup(){
   
   // get grid
   try{
-    grid = new Grid(42.367631, -71.099356, 27, ncols, nrows, radians(30) );
+    grid = new Grid(42.367631, -71.099356, 30, ncols, nrows, radians(30) );
   } catch(Exception ex){
     grid = null;
   }
