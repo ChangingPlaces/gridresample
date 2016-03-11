@@ -32,12 +32,13 @@ float[] getBounds(List<Feature> feats){
   return ret;
 }
 
-float[] bounds;
 List<Feature> feats;
 Grid grid;
 
+// color ramp endpoints
 color from,to;
 
+// resampling grid parameters
 int nrows=10;
 int ncols=20;
 float centerlat = 42.367631;
@@ -46,20 +47,24 @@ float cellwidth = 30.0;
 float theta = radians(30);
 
 // data-to-screen scaling variables;
+float[] bounds;
 float objx;
 float objy;
-
 float yscale;
 float xscale;
 
+// grid of resampled data
 float[][] resampled;
 
 STRtree index;
 
+String shapefile_filename = "subset.shp";
+String property_name = "POP10";
+
 void setup(){
   size(1000,800);
   
-  String filename = dataPath("subset.shp");
+  String filename = dataPath(shapefile_filename);
 
   // read the entire shapefile
   print( "begin reading..." );
@@ -114,9 +119,7 @@ void makeGridAndResample(boolean resample){
   }
   
   if(resample){
-    println("starting resample");
-    resampled = grid.resample(index, "POP10");
-    println("resample finished");
+    resampled = grid.resample(index, property_name);
   }
   
 }
@@ -186,7 +189,6 @@ void mousePressed(){
   x += objx;
   y += objy;
   
-  println( x,y );
   centerlon = x;
   centerlat = y;
   
