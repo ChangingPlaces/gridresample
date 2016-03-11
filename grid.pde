@@ -40,8 +40,7 @@ class Grid{
     return "["+this.ncols+"x"+this.nrows+"]";
   }
   
-  float[][] resample(List<Feature> feats, STRtree index, String propname){
-    //TODO this is very computationally expensive
+  float[][] resample(STRtree index, String propname){
     
     float[][] ret = new float[ncols][nrows];
     

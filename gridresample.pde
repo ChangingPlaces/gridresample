@@ -70,7 +70,7 @@ void setup(){
   grid = new Grid(-71.099356, 42.353578, -71.081149, 42.367631, ncols, nrows);
   
   println("starting resample");
-  resampled = grid.resample(feats, index, "POP10");
+  resampled = grid.resample(index, "POP10");
   println("resample finished");
 
   strokeWeight(0.000003);
