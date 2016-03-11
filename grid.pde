@@ -44,7 +44,7 @@ class Grid{
     float totalwidth = cellwidth*ncols;
     float totalheight = cellwidth*nrows;
     float left = (float)center.x - totalwidth/2;
-    float bottom = (float)center.y - totalwidth/2;
+    float bottom = (float)center.y - totalheight/2;
     
     this.nrows = nrows;
     this.ncols = ncols;

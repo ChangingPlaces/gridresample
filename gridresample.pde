@@ -40,6 +40,17 @@ color from,to;
 
 int nrows=10;
 int ncols=20;
+float centerlat = 42.367631;
+float centerlon = -71.099356;
+float cellwidth = 30.0;
+float theta = radians(30);
+
+// data-to-screen scaling variables;
+float objx;
+float objy;
+
+float yscale;
+float xscale;
 
 float[][] resampled;
 
@@ -66,12 +77,38 @@ void setup(){
   }
   println("done");
   
-  // get the bounding box of the shapefile
-  bounds = getBounds(feats);
+  setScale();
   
+  makeGridAndResample();
+
+  strokeWeight(0.000003);
+  smooth();
+  
+  from = color(204, 102, 0);
+  to = color(0, 102, 153);
+  
+}
+
+void setScale(){
+    // get the bounding box of the shapefile
+    bounds = getBounds(feats);
+  
+    float ll = bounds[0];
+    float bb = bounds[1];
+    float rr = bounds[2];
+    float tt = bounds[3];
+
+    objx = (rr+ll)/2;
+    objy = (tt+bb)/2;
+
+    yscale=height/(tt-bb);
+    xscale=width/(rr-ll);
+}
+
+void makeGridAndResample(){
   // get grid
   try{
-    grid = new Grid(42.367631, -71.099356, 30, ncols, nrows, radians(30) );
+    grid = new Grid(centerlat, centerlon, cellwidth, ncols, nrows, theta );
   } catch(Exception ex){
     grid = null;
   }
@@ -79,12 +116,6 @@ void setup(){
   println("starting resample");
   resampled = grid.resample(index, "POP10");
   println("resample finished");
-
-  strokeWeight(0.000003);
-  smooth();
-  
-  from = color(204, 102, 0);
-  to = color(0, 102, 153);
   
 }
 
@@ -134,20 +165,25 @@ void drawGrid(){
 }
 
 void scaleToBounds(){
-  float ll = bounds[0];
-  float bb = bounds[1];
-  float rr = bounds[2];
-  float tt = bounds[3];
-
-  float objx = (rr+ll)/2;
-  float objy = (tt+bb)/2;
-
-  float yscale=height/(tt-bb);
-  float xscale=width/(rr-ll);
-  
   translate(width/2,height/2);
   scale(xscale,-yscale);
   translate(-objx,-objy);
+}
+
+void mousePressed(){
+  float x = mouseX;
+  float y = mouseY;
+  
+  x -= width/2;
+  y -= height/2;
+  
+  x /= xscale;
+  y /= -yscale;
+  
+  x += objx;
+  y += objy;
+  
+  println( x,y );
 }
 
 void draw(){
@@ -159,4 +195,44 @@ void draw(){
   drawGrid();
   
   noLoop(); //loop once through and stop
+}
+
+void keyPressed(){
+  if(key=='w'){
+    nrows += 1;
+    makeGridAndResample();
+    loop();
+  } else if(key=='s'){
+    nrows -= 1;
+    makeGridAndResample();
+    loop();
+  }else if(key=='d'){
+    ncols += 1;
+    makeGridAndResample();
+    loop();
+  }else if(key=='a'){
+    ncols -= 1;
+    makeGridAndResample();
+    loop();
+  }
+  else if(key=='e'){
+    theta -= PI/32;
+    makeGridAndResample();
+    loop();
+  }
+  else if(key=='q'){
+    theta += PI/32;
+    makeGridAndResample();
+    loop();
+  }
+  else if(key=='+'){
+    cellwidth *= 1.1;
+    makeGridAndResample();
+    loop();
+  }
+  else if(key=='-'){
+    cellwidth /= 1.1;
+    makeGridAndResample();
+    loop();
+  }
 }
