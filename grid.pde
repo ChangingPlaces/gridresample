@@ -16,8 +16,28 @@ class Grid{
     // m / (m/deg) = m * (deg/m) = deg
     return new Coordinate(coord.x / m_per_latdeg, coord.y / m_per_latdeg);
   }
+  
+  void unproj(Coordinate[] coords){
+    for(int i=0; i<coords.length; i++){
+      coords[i] = unproj(coords[i]);
+    }
+  }
+  
+  Coordinate rotate(Coordinate coord, Coordinate center, float theta){
+    double x = coord.x - center.x;
+    double y = coord.y - center.y;
+    double xprime = cos(theta)*x - sin(theta)*y;
+    double yprime = sin(theta)*x + cos(theta)*y;
+    return new Coordinate(center.x + xprime, center.y+yprime);
+  }
+  
+  void rotate(Coordinate[] coords, Coordinate center, float theta){
+    for(int i=0; i<coords.length; i++){
+      coords[i] = rotate(coords[i], center, theta);
+    }
+  }
     
-  Grid(float centerlat, float centerlon, float cellwidth, int ncols, int nrows) throws Exception{    
+  Grid(float centerlat, float centerlon, float cellwidth, int ncols, int nrows, float theta) throws Exception{    
     m_per_londeg = cos( radians(centerlat) )*eq_m_per_londeg;
     
     Coordinate center = proj( new Coordinate(centerlon,centerlat) );
@@ -36,11 +56,15 @@ class Grid{
 
         // create coordinates of corners
         Coordinate[] coords = new Coordinate[5];
-        coords[0] = unproj( new Coordinate(left+x*cellwidth,    bottom+y*cellwidth) ); //lower left
-        coords[1] = unproj( new Coordinate(left+(x+1)*cellwidth,bottom+y*cellwidth) ); //lower right
-        coords[2] = unproj( new Coordinate(left+(x+1)*cellwidth,bottom+(y+1)*cellwidth) ); //upper right
-        coords[3] = unproj( new Coordinate(left+x*cellwidth,    bottom+(y+1)*cellwidth) ); //upper left
-        coords[4] = unproj( new Coordinate(left+x*cellwidth,    bottom+y*cellwidth) ); //lower left
+        coords[0] = new Coordinate(left+x*cellwidth,    bottom+y*cellwidth); //lower left
+        coords[1] = new Coordinate(left+(x+1)*cellwidth,bottom+y*cellwidth); //lower right
+        coords[2] = new Coordinate(left+(x+1)*cellwidth,bottom+(y+1)*cellwidth); //upper right
+        coords[3] = new Coordinate(left+x*cellwidth,    bottom+(y+1)*cellwidth); //upper left
+        coords[4] = new Coordinate(left+x*cellwidth,    bottom+y*cellwidth); //lower left
+        
+        this.rotate( coords, center, theta );
+        this.unproj( coords );
+        
         
         // string them together into a geometry
         LinearRing linear = new GeometryFactory().createLinearRing(coords);

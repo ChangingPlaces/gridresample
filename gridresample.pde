@@ -71,7 +71,7 @@ void setup(){
   
   // get grid
   try{
-    grid = new Grid(42.367631, -71.099356, 27, ncols, nrows );
+    grid = new Grid(42.367631, -71.099356, 27, ncols, nrows, radians(30) );
   } catch(Exception ex){
     grid = null;
   }
