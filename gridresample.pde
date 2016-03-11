@@ -79,7 +79,7 @@ void setup(){
   
   setScale();
   
-  makeGridAndResample();
+  makeGridAndResample(true);
 
   strokeWeight(0.000003);
   smooth();
@@ -105,7 +105,7 @@ void setScale(){
     xscale=width/(rr-ll);
 }
 
-void makeGridAndResample(){
+void makeGridAndResample(boolean resample){
   // get grid
   try{
     grid = new Grid(centerlat, centerlon, cellwidth, ncols, nrows, theta );
@@ -113,9 +113,11 @@ void makeGridAndResample(){
     grid = null;
   }
   
-  println("starting resample");
-  resampled = grid.resample(index, "POP10");
-  println("resample finished");
+  if(resample){
+    println("starting resample");
+    resampled = grid.resample(index, "POP10");
+    println("resample finished");
+  }
   
 }
 
@@ -148,11 +150,12 @@ void drawGrid(){
   for(int y=0; y<nrows; y++){
     for(int x=0; x<ncols; x++){
       Polygon cell = grid.getCell(x,y);
-      float ind = resampled[y][x];
-      float density = ind/(float)cell.getArea();
       
-      fill( lerpColor(from,to,density/300000000.0) );
-      
+      if(resampled != null){
+        float ind = resampled[y][x];
+        float density = ind/(float)cell.getArea();
+        fill( lerpColor(from,to,density/300000000.0) );
+      }
       
       Coordinate[] coords = cell.getCoordinates();
       beginShape();
@@ -184,6 +187,11 @@ void mousePressed(){
   y += objy;
   
   println( x,y );
+  centerlon = x;
+  centerlat = y;
+  
+  makeGridAndResample(true);
+  loop();
 }
 
 void draw(){
@@ -200,39 +208,39 @@ void draw(){
 void keyPressed(){
   if(key=='w'){
     nrows += 1;
-    makeGridAndResample();
+    makeGridAndResample(true);
     loop();
   } else if(key=='s'){
     nrows -= 1;
-    makeGridAndResample();
+    makeGridAndResample(true);
     loop();
   }else if(key=='d'){
     ncols += 1;
-    makeGridAndResample();
+    makeGridAndResample(true);
     loop();
   }else if(key=='a'){
     ncols -= 1;
-    makeGridAndResample();
+    makeGridAndResample(true);
     loop();
   }
   else if(key=='e'){
     theta -= PI/32;
-    makeGridAndResample();
+    makeGridAndResample(true);
     loop();
   }
   else if(key=='q'){
     theta += PI/32;
-    makeGridAndResample();
+    makeGridAndResample(true);
     loop();
   }
   else if(key=='+'){
     cellwidth *= 1.1;
-    makeGridAndResample();
+    makeGridAndResample(true);
     loop();
   }
   else if(key=='-'){
     cellwidth /= 1.1;
-    makeGridAndResample();
+    makeGridAndResample(true);
     loop();
   }
 }
