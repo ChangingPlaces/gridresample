@@ -35,8 +35,8 @@ Grid grid;
 
 color from,to;
 
-int nrows=10;
-int ncols=10;
+int nrows=20;
+int ncols=20;
 
 float[][] resampled;
 
@@ -67,7 +67,7 @@ void setup(){
   bounds = getBounds(feats);
   
   // get grid
-  grid = new Grid(-71.099356, 42.353578, -71.081149, 42.367631, ncols, nrows);
+  grid = new Grid(42.367631, -71.099356, 27, ncols, nrows );
   
   println("starting resample");
   resampled = grid.resample(index, "POP10");

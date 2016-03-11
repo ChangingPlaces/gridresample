@@ -1,15 +1,27 @@
 class Grid{
+  float eq_m_per_londeg = 17716.9;
+  float m_per_latdeg = 17657.7;
+  
   List<Polygon> cells;
   int ncols;
   int nrows;
   float cellArea;
   
-  Grid(float left, float bottom, float right, float top, int ncols, int nrows){
+  Grid(float centerlat, float centerlon, float cellwidth_meters, int ncols, int nrows){
+    float m_per_londeg = cos( radians(centerlat) )*eq_m_per_londeg;
+    
+    float cellwidth = cellwidth_meters / m_per_londeg; // m / (m/deg) = m * (deg/m) = deg
+    float cellheight = cellwidth_meters / m_per_latdeg; // m / (m/deg) = m * (deg/m) = deg
+    float totalwidth = cellwidth*ncols;
+    float totalheight = cellheight*nrows;
+    float left = centerlon - totalwidth/2;
+    float rigtht = centerlon + totalwidth/2;
+    float bottom = centerlat - totalheight/2;
+    float top = centerlat + totalheight/2;
+    
     this.nrows = nrows;
     this.ncols = ncols;
     
-    float cellwidth = (right-left)/ncols;
-    float cellheight = (top-bottom)/nrows;
     this.cellArea = cellwidth*cellheight;
     
     List<Polygon> cells = new ArrayList<Polygon>();
