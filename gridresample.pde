@@ -4,6 +4,7 @@ import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.index.strtree.STRtree;
 
 float[] getBounds(List<Feature> feats){
   float[] ret = new float[4];
@@ -39,6 +40,8 @@ int ncols=10;
 
 float[][] resampled;
 
+STRtree index;
+
 void setup(){
   size(1000,800);
   
@@ -51,14 +54,23 @@ void setup(){
   println( "read "+feats.size()+" features" );
   println( "first feature: "+feats.get(0) );
   
+  println("indexing...");
+  index = new STRtree();
+  for(Feature feat : feats){
+    Geometry geom = (Geometry) feat.getDefaultGeometryProperty().getValue();
+    Envelope env = geom.getEnvelopeInternal();
+    index.insert( env, feat );
+  }
+  println("done");
+  
   // get the bounding box of the shapefile
   bounds = getBounds(feats);
   
   // get grid
-  grid = new Grid(-71.099356, 42.353578, -71.081149, 42.367631, nrows, ncols);
+  grid = new Grid(-71.099356, 42.353578, -71.081149, 42.367631, ncols, nrows);
   
   println("starting resample");
-  resampled = grid.resample(feats, "POP10");
+  resampled = grid.resample(feats, index, "POP10");
   println("resample finished");
 
   strokeWeight(0.000003);

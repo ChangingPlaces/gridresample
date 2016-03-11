@@ -40,7 +40,7 @@ class Grid{
     return "["+this.ncols+"x"+this.nrows+"]";
   }
   
-  float[][] resample(List<Feature> feats, String propname){
+  float[][] resample(List<Feature> feats, STRtree index, String propname){
     //TODO this is very computationally expensive
     
     float[][] ret = new float[ncols][nrows];
@@ -51,8 +51,11 @@ class Grid{
         float sum = 0;
         
         Polygon cell = this.cells.get(y*ncols+x);
+        
+        List<Feature> queryFeats = index.query( cell.getEnvelopeInternal() );
+        
         int nOverlaps = 0;
-        for(Feature feat : feats){
+        for(Feature feat : queryFeats){
           MultiPolygon featgeom = (MultiPolygon) feat.getDefaultGeometryProperty().getValue();
           int ind = (Integer)feat.getProperty(propname).getValue();
           Geometry overlap = featgeom.intersection(cell);
