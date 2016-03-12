@@ -39,8 +39,8 @@ Grid grid;
 color from,to;
 
 // resampling grid parameters
-int nrows=10;
-int ncols=20;
+int nrows=30;
+int ncols=30;
 float centerlat = 42.367631;
 float centerlon = -71.099356;
 float cellwidth = 30.0;
@@ -132,6 +132,7 @@ void drawPolygons(){
     int ind = (Integer)feat.getProperty(property_name).getValue();
     float density = ind/(float)geom.getArea();
     
+    // Density in units of value per degrees^2
     fill( lerpColor(from,to,density/300000000.0) );
     
     for(int i=0; i<geom.getNumGeometries(); i++){
@@ -150,14 +151,25 @@ void drawGrid(){
   stroke(0);
   strokeWeight(0.00001);
   noFill();
+  
+  float maxRenderValue = 1000.0;
+  float maxValue = 0;
+  float totalValue = 0;
+  
   for(int y=0; y<nrows; y++){
     for(int x=0; x<ncols; x++){
       Polygon cell = grid.getCell(x,y);
       
       if(resampled != null){
         float ind = resampled[y][x];
-        float density = ind/(float)cell.getArea();
-        fill( lerpColor(from,to,density/300000000.0) );
+        totalValue += ind;
+        if (ind > maxValue) {maxValue = ind;}
+        
+        // Brandon's original code displays in units per degrees^2
+        // float density = ind/(float)cell.getArea();
+        // fill( lerpColor(from,to,density/300000000.0) );
+        
+        fill( lerpColor(from,to,ind/maxRenderValue) );
       }
       
       Coordinate[] coords = cell.getCoordinates();
@@ -168,6 +180,9 @@ void drawGrid(){
       endShape(CLOSE);
     }
   }
+  
+  println("Max Grid Bucket Value = " + maxValue + " " + property_name + " units.");
+  println("Area of each Grid Bucket = " + sq(cellwidth) + " square meters.");
 }
 
 void scaleToBounds(){
