@@ -153,8 +153,9 @@ void drawGrid(){
   noFill();
   
   float maxRenderValue = 1000.0;
-  float maxValue = 0;
-  float totalValue = 0;
+  float maxValue = Float.NEGATIVE_INFINITY;
+  float minValue = Float.POSITIVE_INFINITY;
+  float totalValue = 0.0;
   
   for(int y=0; y<nrows; y++){
     for(int x=0; x<ncols; x++){
@@ -164,6 +165,7 @@ void drawGrid(){
         float ind = resampled[y][x];
         totalValue += ind;
         if (ind > maxValue) {maxValue = ind;}
+        if (ind < minValue) {minValue = ind;}
         
         // Brandon's original code displays in units per degrees^2
         // float density = ind/(float)cell.getArea();
@@ -181,8 +183,15 @@ void drawGrid(){
     }
   }
   
-  println("Max Grid Bucket Value = " + maxValue + " " + property_name + " units.");
-  println("Area of each Grid Bucket = " + sq(cellwidth) + " square meters.");
+  println("---");
+  println("Max Cell Value      = " + maxValue + " " + property_name + " units.");
+  println("Min Cell Value      = " + minValue + " " + property_name + " units.");
+  println("Average Cell Value  = " + totalValue/(nrows*ncols) + " " + property_name + " units.");
+  println("Total Cell Values   = " + totalValue + " " + property_name + " units.");
+  println("Area of each Cell   = " + sq(cellwidth) + " square meters.");
+  println("Total Area of Cells = " + nrows*ncols*sq(cellwidth) + " square meters.");
+  println("Average Density     = " + totalValue/(nrows*ncols*sq(cellwidth)) + " " + property_name + " units per square meter.");
+  
 }
 
 void scaleToBounds(){
