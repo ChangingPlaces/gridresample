@@ -8,7 +8,7 @@ Grid Resample takes GIS data and distributes it over a bucket grid.
 
 ## customization
 
-* Put your favorite shapefile in the data directory
+* Put your favorite shapefile in the data directory maybe [here](https://www.census.gov/geo/maps-data/data/tiger-data.html).
 * Change the value of the ``shapefile_filename`` variable to your shapefile.
 * Change the value of the ``property_name`` variable to the shapfile property name you want to visualize.
 
