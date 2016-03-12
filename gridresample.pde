@@ -129,7 +129,7 @@ void drawPolygons(){
   
   for(Feature feat : feats ){
     MultiPolygon geom = (MultiPolygon) feat.getDefaultGeometryProperty().getValue();
-    int ind = (Integer)feat.getProperty("POP10").getValue();
+    int ind = (Integer)feat.getProperty(property_name).getValue();
     float density = ind/(float)geom.getArea();
     
     fill( lerpColor(from,to,density/300000000.0) );
