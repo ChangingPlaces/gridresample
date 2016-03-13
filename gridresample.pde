@@ -25,6 +25,8 @@ float[] getBounds(List<Feature> feats){
     ymax = max(ymax, Double.valueOf(env.getMaxY()).floatValue());
   }
   
+  println(xmin, xmax, ymin, ymax);
+  
   ret[0] = xmin;
   ret[1] = ymin;
   ret[2] = xmax;
@@ -38,6 +40,10 @@ Grid grid;
 // color ramp endpoints
 color from,to;
 
+// MA Data Set
+String shapefile_filename = "subset.shp";
+String property_name = "POP10";
+
 // resampling grid parameters
 int nrows=30;
 int ncols=30;
@@ -45,6 +51,20 @@ float centerlat = 42.367631;
 float centerlon = -71.099356;
 float cellwidth = 30.0;
 float theta = radians(30);
+
+/*
+// CO Data Set
+String shapefile_filename = "tabblock_2010_08_pophu_reduced.shp";
+String property_name = "POP10";
+
+// resampling grid parameters
+int nrows=5;
+int ncols=5;
+float centerlat = 39.95;
+float centerlon = -104.9903;
+float cellwidth = 2000.0;
+float theta = radians(0);
+*/
 
 // data-to-screen scaling variables;
 float[] bounds;
@@ -58,8 +78,6 @@ float[][] resampled;
 
 STRtree index;
 
-String shapefile_filename = "subset.shp";
-String property_name = "POP10";
 
 void setup(){
   size(1000,800);

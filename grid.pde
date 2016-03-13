@@ -9,12 +9,12 @@ class Grid{
   
   Coordinate proj(Coordinate coord){
     // deg * m/deg = m
-    return new Coordinate(coord.x * m_per_latdeg, coord.y * m_per_latdeg);
+    return new Coordinate(coord.x * m_per_londeg, coord.y * m_per_latdeg);
   }
   
   Coordinate unproj(Coordinate coord){
     // m / (m/deg) = m * (deg/m) = deg
-    return new Coordinate(coord.x / m_per_latdeg, coord.y / m_per_latdeg);
+    return new Coordinate(coord.x / m_per_londeg, coord.y / m_per_latdeg);
   }
   
   void unproj(Coordinate[] coords){
