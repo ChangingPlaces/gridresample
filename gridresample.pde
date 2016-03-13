@@ -39,6 +39,7 @@ Grid grid;
 
 // color ramp endpoints
 color from,to;
+float maxDensity;
 
 // MA Data Set
 String shapefile_filename = "subset.shp";
@@ -52,14 +53,15 @@ float centerlon = -71.099356;
 float cellwidth = 250.0;
 float theta = radians(30);
 
+
 /*
 // CO Data Set
 String shapefile_filename = "tabblock_2010_08_pophu_reduced.shp";
 String property_name = "POP10";
 
 // resampling grid parameters
-int nrows=5;
-int ncols=5;
+int nrows=4*22;
+int ncols=4*18;
 float centerlat = 39.95;
 float centerlon = -104.9903;
 float cellwidth = 2000.0;
@@ -103,6 +105,8 @@ void setup(){
   setScale();
   
   makeGridAndResample(true);
+  
+  
 
   strokeWeight(0.000003);
   smooth();
@@ -142,16 +146,35 @@ void makeGridAndResample(boolean resample){
   
 }
 
+void setMaxDensity() {
+  maxDensity = Float.NEGATIVE_INFINITY;
+  float ind, density;
+  Polygon cell;
+  
+  // Determines max density of cell values
+  for(int y=0; y<nrows; y++){
+    for(int x=0; x<ncols; x++){
+      cell = grid.getCell(x,y);
+      ind = resampled[y][x];
+      density = ind/(float)cell.getArea();
+      maxDensity = max(maxDensity, density);
+    }
+  }
+}
+
 void drawPolygons(){
   noStroke();
   
+  float ind, density;
+  MultiPolygon geom;
+  
   for(Feature feat : feats ){
-    MultiPolygon geom = (MultiPolygon) feat.getDefaultGeometryProperty().getValue();
-    int ind = (Integer)feat.getProperty(property_name).getValue();
-    float density = ind/(float)geom.getArea();
+    geom = (MultiPolygon) feat.getDefaultGeometryProperty().getValue();
+    ind = (Integer)feat.getProperty(property_name).getValue();
+    density = ind/(float)geom.getArea();
     
     // Density in units of value per degrees^2
-    fill( lerpColor(from,to,density/300000000.0) );
+    fill( lerpColor(from,to,density/maxDensity) );
     
     for(int i=0; i<geom.getNumGeometries(); i++){
       Geometry subgeom = geom.getGeometryN(i);
@@ -170,26 +193,26 @@ void drawGrid(){
   strokeWeight(0.00001);
   noFill();
   
-  float maxRenderValue = 1000.0;
   float maxValue = Float.NEGATIVE_INFINITY;
   float minValue = Float.POSITIVE_INFINITY;
   float totalValue = 0.0;
   
+  float ind, density;
+  Polygon cell;
+  
   for(int y=0; y<nrows; y++){
     for(int x=0; x<ncols; x++){
-      Polygon cell = grid.getCell(x,y);
+      cell = grid.getCell(x,y);
       
       if(resampled != null){
-        float ind = resampled[y][x];
+        ind = resampled[y][x];
+        density = ind/(float)cell.getArea();
         totalValue += ind;
-        if (ind > maxValue) {maxValue = ind;}
-        if (ind < minValue) {minValue = ind;}
+        maxValue = max(maxValue, ind);
+        minValue = min(minValue, ind);
         
-        // Brandon's original code displays in units per degrees^2
-        // float density = ind/(float)cell.getArea();
-        // fill( lerpColor(from,to,density/300000000.0) );
-        
-        fill( lerpColor(from,to,ind/maxRenderValue) );
+        // value / deg^2
+        fill( lerpColor(from,to,density/maxDensity) );
       }
       
       Coordinate[] coords = cell.getCoordinates();
@@ -243,6 +266,7 @@ void draw(){
 
   scaleToBounds();
   
+  setMaxDensity();
   drawPolygons();
   drawGrid();
   
