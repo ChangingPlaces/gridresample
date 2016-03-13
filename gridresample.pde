@@ -41,9 +41,11 @@ Grid grid;
 color from,to;
 float maxDensity;
 
-/*
+
 // MA Data Set
-String shapefile_filename = "subset.shp";
+String shapefile_name = "subset";
+String shapefile_filesuffix = ".shp";
+String shapefile_filename = shapefile_name + shapefile_filesuffix;
 String property_name = "POP10";
 
 // resampling grid parameters
@@ -53,19 +55,22 @@ float centerlat = 42.367631;
 float centerlon = -71.099356;
 float cellwidth = 250.0;
 float theta = radians(30);
-*/
 
+/*
 // CO Data Set
-String shapefile_filename = "tabblock_2010_08_pophu_reduced.shp";
+String shapefile_name = "tabblock_2010_08_pophu_reduced";
+String shapefile_filesuffix = ".shp";
+String shapefile_filename = shapefile_name + shapefile_filesuffix;
 String property_name = "POP10";
 
 // resampling grid parameters
-int nrows=4*22;
-int ncols=4*18;
+int nrows=4*4*22;
+int ncols=4*4*18;
 float centerlat = 39.95;
 float centerlon = -104.9903;
-float cellwidth = 2000.0;
+float cellwidth = 500.0;
 float theta = radians(0);
+*/
 
 // data-to-screen scaling variables;
 float[] bounds;
@@ -104,8 +109,6 @@ void setup(){
   setScale();
   
   makeGridAndResample(true);
-  
-  
 
   strokeWeight(0.000003);
   smooth();
@@ -143,6 +146,34 @@ void makeGridAndResample(boolean resample){
     resampled = grid.resample(index, property_name);
   }
   
+  saveResample();
+}
+
+void saveResample() {
+  
+  // Init Table Object for data export
+  Table resampledCSV = new Table();
+  for (int i=0; i<nrows; i++) {
+    resampledCSV.addRow();
+  }
+  for (int j=0; j<ncols; j++) {
+    resampledCSV.addColumn();
+  }
+  
+  float ind;
+  Polygon cell;
+  
+  for(int y=0; y<nrows; y++){
+    for(int x=0; x<ncols; x++){
+      if(resampled != null){
+        resampledCSV.setFloat(y,x,resampled[y][x]);
+      } else {
+        resampledCSV.setFloat(y,x,0);
+      }
+    }
+  }
+  
+  saveTable(resampledCSV, "export/" + shapefile_name + "_" + nrows + "_" + ncols + "_" + (int)cellwidth + ".csv");
 }
 
 void setMaxDensity() {
