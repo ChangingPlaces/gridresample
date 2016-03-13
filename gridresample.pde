@@ -49,7 +49,7 @@ int nrows=30;
 int ncols=30;
 float centerlat = 42.367631;
 float centerlon = -71.099356;
-float cellwidth = 30.0;
+float cellwidth = 250.0;
 float theta = radians(30);
 
 /*

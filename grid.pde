@@ -1,7 +1,9 @@
 class Grid{
-  float eq_m_per_londeg = 17716.9;
+  //Create the unit conversion ratios. Equatorial Earth Radius = 6378.1km; Polar Earth Radius = 6356.8km;
+  //I find the km per Longitude from the center and assume its constant over the region
+  float eq_m_per_londeg = 2*PI*6378100.0/360;
   float m_per_londeg;
-  float m_per_latdeg = 17657.7;
+  float m_per_latdeg = 2*PI*6356800.0/360;
   
   List<Polygon> cells;
   int ncols;
