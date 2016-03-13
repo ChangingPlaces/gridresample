@@ -41,7 +41,7 @@ Grid grid;
 color from,to;
 float maxDensity;
 
-
+/*
 // MA Data Set
 String shapefile_name = "subset";
 String shapefile_filesuffix = ".shp";
@@ -55,22 +55,22 @@ float centerlat = 42.367631;
 float centerlon = -71.099356;
 float cellwidth = 250.0;
 float theta = radians(30);
+*/
 
-/*
 // CO Data Set
 String shapefile_name = "tabblock_2010_08_pophu_reduced";
 String shapefile_filesuffix = ".shp";
 String shapefile_filename = shapefile_name + shapefile_filesuffix;
-String property_name = "POP10";
+String property_name = "HOUSING10";
 
 // resampling grid parameters
-int nrows=4*4*22;
-int ncols=4*4*18;
+int nrows=4*22;
+int ncols=4*18;
 float centerlat = 39.95;
 float centerlon = -104.9903;
-float cellwidth = 500.0;
+float cellwidth = 2000.0;
 float theta = radians(0);
-*/
+
 
 // data-to-screen scaling variables;
 float[] bounds;
@@ -173,7 +173,7 @@ void saveResample() {
     }
   }
   
-  saveTable(resampledCSV, "export/" + shapefile_name + "_" + nrows + "_" + ncols + "_" + (int)cellwidth + ".csv");
+  saveTable(resampledCSV, "export/" + shapefile_name + "_" + property_name + "_" + nrows + "_" + ncols + "_" + (int)cellwidth + ".csv");
 }
 
 void setMaxDensity() {
