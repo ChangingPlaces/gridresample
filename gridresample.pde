@@ -41,6 +41,7 @@ Grid grid;
 color from,to;
 float maxDensity;
 
+/*
 // MA Data Set
 String shapefile_filename = "subset.shp";
 String property_name = "POP10";
@@ -52,9 +53,8 @@ float centerlat = 42.367631;
 float centerlon = -71.099356;
 float cellwidth = 250.0;
 float theta = radians(30);
+*/
 
-
-/*
 // CO Data Set
 String shapefile_filename = "tabblock_2010_08_pophu_reduced.shp";
 String property_name = "POP10";
@@ -66,7 +66,6 @@ float centerlat = 39.95;
 float centerlon = -104.9903;
 float cellwidth = 2000.0;
 float theta = radians(0);
-*/
 
 // data-to-screen scaling variables;
 float[] bounds;
@@ -82,7 +81,7 @@ STRtree index;
 
 
 void setup(){
-  size(1000,800);
+  size(720,880);
   
   String filename = dataPath(shapefile_filename);
 
