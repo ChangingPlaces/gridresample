@@ -25,7 +25,7 @@ float[] getBounds(List<Feature> feats){
     ymax = max(ymax, Double.valueOf(env.getMaxY()).floatValue());
   }
   
-  println(xmin, xmax, ymin, ymax);
+  println("Shapefile Extents: " + xmin, xmax, ymin, ymax);
   
   ret[0] = xmin;
   ret[1] = ymin;
@@ -41,37 +41,62 @@ Grid grid;
 color from,to;
 float maxDensity;
 
-// MA Data Set
-String friendly_name = "boston";
-String shapefile_name = "subset";
-String shapefile_filesuffix = ".shp";
-String shapefile_filename = shapefile_name + shapefile_filesuffix;
-String property_name = "POP10";
+// shapefile and resampling grid parameters
+String friendly_name, shapefile_name, shapefile_filesuffix, shapefile_filename, property_name;
+int nrows, ncols;
+float centerlat, centerlon, cellwidth, theta;
 
-// resampling grid parameters
-int nrows=30;
-int ncols=30;
-float centerlat = 42.367631;
-float centerlon = -71.099356;
-float cellwidth = 250.0;
-float theta = radians(30);
+void setMassData() {
+  // MA Data Set
+  friendly_name = "boston";
+  shapefile_name = "subset";
+  shapefile_filesuffix = ".shp";
+  shapefile_filename = shapefile_name + shapefile_filesuffix;
+  property_name = "POP10";
+  
+  // resampling grid parameters
+  nrows=30;
+  ncols=30;
+  centerlat = 42.367631;
+  centerlon = -71.099356;
+  cellwidth = 250.0;
+  theta = radians(30);
+}
 
-/*
-// CO Data Set
-String friendly_name = "denver";
-String shapefile_name = "tabblock_2010_08_pophu_reduced";
-String shapefile_filesuffix = ".shp";
-String shapefile_filename = shapefile_name + shapefile_filesuffix;
-String property_name = "HOUSING10";
+void setColoradoData() {
+  // CO Data Set
+  friendly_name = "denver";
+  shapefile_name = "tabblock_2010_08_pophu_reduced";
+  property_name = "POP10";
+  shapefile_filesuffix = ".shp";
+  shapefile_filename = shapefile_name + shapefile_filesuffix;
 
-// resampling grid parameters
-int nrows=4*4*22;
-int ncols=4*4*18;
-float centerlat = 39.95;
-float centerlon = -104.9903;
-float cellwidth = 500.0;
-float theta = radians(0);
-*/
+  // resampling grid parameters
+  nrows=4*22;
+  ncols=4*18;
+  centerlat = 39.95;
+  centerlon = -104.9903;
+  cellwidth = 2000.0;
+  theta = radians(0);
+}
+
+void setSanJoseData() {
+  // CO Data Set
+  friendly_name = "sanjose";
+  shapefile_name = "tabblock2010_06_pophu_reduced";
+  //property_name = "HOUSING10";
+  property_name = "POP10";
+  shapefile_filesuffix = ".shp";
+  shapefile_filename = shapefile_name + shapefile_filesuffix;
+
+  // resampling grid parameters
+  nrows=4*22;
+  ncols=4*18;
+  centerlat = 37.395237;
+  centerlon = -121.979507;
+  cellwidth = 2000.0;
+  theta = radians(0);
+}
 
 // data-to-screen scaling variables;
 float[] bounds;
@@ -88,6 +113,10 @@ STRtree index;
 
 void setup(){
   size(720,880);
+  
+  //setMassData();
+  setColoradoData();
+  //setSanJoseData();
   
   String filename = dataPath(shapefile_filename);
 
@@ -198,11 +227,13 @@ void drawPolygons(){
   
   float ind, density;
   MultiPolygon geom;
+  float totalValue = 0;
   
   for(Feature feat : feats ){
     geom = (MultiPolygon) feat.getDefaultGeometryProperty().getValue();
     ind = (Integer)feat.getProperty(property_name).getValue();
     density = ind/(float)geom.getArea();
+    totalValue += ind;
     
     // Density in units of value per degrees^2
     fill( lerpColor(from,to,density/maxDensity) );
@@ -217,6 +248,7 @@ void drawPolygons(){
       endShape(CLOSE);
     }
   }
+  println("Total Polygon Values = " + totalValue + " " + property_name + " units.");
 }
 
 void drawGrid(){
