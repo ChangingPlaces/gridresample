@@ -114,8 +114,8 @@ STRtree index;
 void setup(){
   size(720,880);
   
-  //setMassData();
-  setColoradoData();
+  setMassData();
+  //setColoradoData();
   //setSanJoseData();
   
   String filename = dataPath(shapefile_filename);
@@ -324,6 +324,8 @@ void mousePressed(){
   loop();
 }
 
+boolean drawGrid = true;
+
 void draw(){
   background(255);
 
@@ -331,7 +333,9 @@ void draw(){
   
   setMaxDensity();
   drawPolygons();
-  drawGrid();
+  if (drawGrid) {
+    drawGrid();
+  }
   
   noLoop(); //loop once through and stop
 }
@@ -372,6 +376,14 @@ void keyPressed(){
   else if(key=='-'){
     cellwidth /= 1.1;
     makeGridAndResample(true);
+    loop();
+  }
+  else if(key=='g'){
+    if(drawGrid) {
+     drawGrid = false;
+    } else {
+     drawGrid = true;
+    }
     loop();
   }
 }
