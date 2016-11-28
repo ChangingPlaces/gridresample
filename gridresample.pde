@@ -42,8 +42,8 @@ color from,to;
 float maxDensity;
 
 // shapefile and resampling grid parameters
-String friendly_name, shapefile_name, shapefile_filesuffix, shapefile_filename, property_name;
-int nrows, ncols;
+String friendly_name, shapefile_name, shapefile_filesuffix, shapefile_filename, property_name, property_type;
+int nrows, ncols, iterations;
 float centerlat, centerlon, cellwidth, theta;
 
 void setMassData() {
@@ -53,6 +53,8 @@ void setMassData() {
   shapefile_filesuffix = ".shp";
   shapefile_filename = shapefile_name + shapefile_filesuffix;
   property_name = "POP10";
+  property_type = "Int";
+  iterations = 1;
   
   // resampling grid parameters
   nrows=30;
@@ -70,6 +72,8 @@ void setColoradoData() {
   property_name = "POP10";
   shapefile_filesuffix = ".shp";
   shapefile_filename = shapefile_name + shapefile_filesuffix;
+  property_type = "Int";
+  iterations = 1;
 
   // resampling grid parameters
   nrows=4*22;
@@ -88,6 +92,8 @@ void setSanJoseData() {
   property_name = "POP10";
   shapefile_filesuffix = ".shp";
   shapefile_filename = shapefile_name + shapefile_filesuffix;
+  property_type = "Int";
+  iterations = 1;
 
   // resampling grid parameters
   nrows=4*22;
@@ -97,6 +103,52 @@ void setSanJoseData() {
   cellwidth = 2000.0;
   theta = radians(0);
 }
+
+void setSingaporeData() {
+  // Singapore Data Set
+  friendly_name = "singapore";
+  shapefile_name = "singapore/ResPopWGS84";
+  //shapefile_name = "singapore/JELandUse_WGS84";
+  property_name = "POP";
+  //property_name = "TEST";
+  shapefile_filesuffix = ".shp";
+  shapefile_filename = shapefile_name + shapefile_filesuffix;
+  property_type = "Int";
+  iterations = 1;
+
+  // resampling grid parameters (Uses psuedo Mercator)
+  
+  // Decimal: 103.74234° lon, 1.33342° lat
+  // Psuedo Mercator: 11548544.46 X; 148449.04 Y
+  
+  nrows=1*4*22;
+  ncols=1*4*18;
+  centerlat = 1.33342;
+  centerlon = 103.74234;
+  //cellwidth = 3000.0/(4*18);
+  cellwidth = 20;
+  theta = radians(0);
+}  
+
+void setKendallData() {
+  // Kendall Data Set
+  friendly_name = "kendall";
+  shapefile_name = "Kendall_Commuter/Kendall_TravelMode_BOS";
+  //shapefile_name = "Kendall_Commuter/Kendall_TravelTime";
+  property_name = "MHD01_VD01";
+  shapefile_filesuffix = ".shp";
+  shapefile_filename = shapefile_name + shapefile_filesuffix;
+  property_type = "String";
+  iterations = 21;
+  
+  // resampling grid parameters
+  nrows=4*12;
+  ncols=4*12;
+  centerlat = 42.36397;
+  centerlon = -71.08396;
+  cellwidth = 0.58 * 1609.34 / nrows; // 0.58 mi; 1609.34 m/mi
+  theta = 1.443659698; // Radians
+}  
 
 // data-to-screen scaling variables;
 float[] bounds;
@@ -112,39 +164,48 @@ STRtree index;
 
 
 void setup(){
-  size(720,880);
+  size(1000,1000);
   
   setMassData();
   //setColoradoData();
   //setSanJoseData();
+  //setSingaporeData();
+  //setKendallData();
+    
+  for (int i=1; i<=iterations; i++) {
+    
+    if (iterations > 1) // Exceptional data reference for Kendall Data
+      property_name = "MHD01_VD" + String.format("%02d", i);
+    
+    String filename = dataPath(shapefile_filename);
   
-  String filename = dataPath(shapefile_filename);
-
-  // read the entire shapefile
-  print( "begin reading..." );
-  feats = getFeatures( filename, 1000000 );
-  println( "done" );
-  println( "read "+feats.size()+" features" );
-  println( "first feature: "+feats.get(0) );
+    // read the entire shapefile
+    print( "begin reading..." );
+    feats = getFeatures( filename, 1000000 );
+    println( "done" );
+    println( "read "+feats.size()+" features" );
+    println( "first feature: "+feats.get(0) );
+    
+    println("indexing...");
+    index = new STRtree();
+    for(Feature feat : feats){
+      Geometry geom = (Geometry) feat.getDefaultGeometryProperty().getValue();
+      Envelope env = geom.getEnvelopeInternal();
+      index.insert( env, feat );
+    }
+    println("done");
+    
+    setScale();
+    
+    makeGridAndResample(true);
   
-  println("indexing...");
-  index = new STRtree();
-  for(Feature feat : feats){
-    Geometry geom = (Geometry) feat.getDefaultGeometryProperty().getValue();
-    Envelope env = geom.getEnvelopeInternal();
-    index.insert( env, feat );
+    strokeWeight(0.000003);
+    smooth();
+    
+    from = color(204, 102, 0);
+    to = color(0, 102, 153);
+    
   }
-  println("done");
-  
-  setScale();
-  
-  makeGridAndResample(true);
-
-  strokeWeight(0.000003);
-  smooth();
-  
-  from = color(204, 102, 0);
-  to = color(0, 102, 153);
   
 }
 
@@ -231,7 +292,12 @@ void drawPolygons(){
   
   for(Feature feat : feats ){
     geom = (MultiPolygon) feat.getDefaultGeometryProperty().getValue();
-    ind = (Integer)feat.getProperty(property_name).getValue();
+    println(feat.getProperty(property_name).getValue());
+    ind = 0;
+    if (property_type.equals("Int")) 
+      ind = (Integer)feat.getProperty(property_name).getValue();
+    else if (property_type.equals("String"))
+      ind = Integer.parseInt((String)feat.getProperty(property_name).getValue());
     density = ind/(float)geom.getArea();
     totalValue += ind;
     
@@ -319,6 +385,9 @@ void mousePressed(){
   
   centerlon = x;
   centerlat = y;
+  
+  println("lon: " + centerlon);
+  println("lat: " + centerlat);
   
   makeGridAndResample(true);
   loop();

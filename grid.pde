@@ -99,8 +99,15 @@ class Grid{
         int nOverlaps = 0;
         for(Feature feat : queryFeats){
           MultiPolygon featgeom = (MultiPolygon) feat.getDefaultGeometryProperty().getValue();
-          int ind = (Integer)feat.getProperty(propname).getValue();
-          Geometry overlap = featgeom.intersection(cell);
+          
+          int ind = 0;
+          
+          if (property_type.equals("Int")) 
+            ind = (Integer)feat.getProperty(propname).getValue();
+          else if (property_type.equals("String"))
+            ind = Integer.parseInt((String)feat.getProperty(propname).getValue());
+            
+            Geometry overlap = featgeom.intersection(cell);
           
           float fracOverlap = (float)(overlap.getArea()/featgeom.getArea());
           if(fracOverlap>0){
